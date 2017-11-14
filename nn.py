@@ -7,7 +7,7 @@ class DataPoint(point):
 
         def __init__(self, one, two, three, four, five, six, seven, eight, nine, ten, eleven, filename, feature_set):
             # setting all the features' values
-            self.one = one # the classification: a one or a two
+            self.one = one  # the classification: a one or a two
             self.two = two
             self.three = three
             self.four = four
