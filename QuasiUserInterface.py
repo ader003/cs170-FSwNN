@@ -8,7 +8,7 @@ def select_algorithm():
     algorithm = input("Select the algorithm you wish to use: " + '\n' +
                       "1. Forward Selection" + '\n' +
                       "2. Backwards Elimination" + '\n' +
-                      "3. Propinquus Algorithm" + '\n'
+                      "3. Propinqua Algorithm" + '\n'
                       )  # "Propinquus" is latin for "near/neighboring"
 
     # print("Please hold while the data is normalized.")
@@ -21,11 +21,13 @@ def select_algorithm():
         backwards_elimination()
 
     if algorithm == "3":
-        propinquus()
+        propinqua()
 
 
-def create_feature_sets():
+def create_feature_sets():  # pass in the number of features, or detect the number of features?
+    # TODO: How to manage the overloaded operator?
     # TODO: CREATE TREE OF FEATURE SETS TO EXPLORE
+
     return queue
 
 
@@ -34,14 +36,17 @@ def normalize_data():
 
 
 def forward_selection():
+    print("Beginning search.")
     return
 
 
 def backwards_elimination():
+    print("Beginning search.")
     return
 
 
-def propinquus():
+def propinqua():
+    print("Beginning search.")
     return
 
 
