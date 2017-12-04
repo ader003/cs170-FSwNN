@@ -24,32 +24,28 @@ def normalize_data(data):
 
 
 def forward_selection(data):
-    # add features one by one until the most accurate set of features is found
-    #print("FIRST LINE OF DATA: ", data[0], '\n') 
-    #print("Length of data[0]: ", len(data[0]), '\n') CONSENSUS: Data is read in correctly; len(data[i]) = 11
-    current_set_of_features = []
-    considered_set_of_features = []
-    print("Beginning search.")
-    current_best_accuracy = 0.0
+    curr_set_of_features = []
     start_time = time.time()
-    for i in range(0, len(data)):
-        for k in range(1, len(data[i])):
-            if k not in current_set_of_features:
-                current_set_of_features.append(k)
-                considered_set_of_features.append(k)
-                # accuracy = find_accuracy(current_set_of_features, data)
-                accuracy = random.random()
-                current_set_of_features.remove(k)
-                if accuracy > current_best_accuracy:
-                    current_best_accuracy = accuracy
-                    feature_added_at_this_level = k
-        if k not in current_set_of_features and k not in considered_set_of_features:
-            current_set_of_features.append(feature_added_at_this_level)
-        print(current_set_of_features)
+    global_best_acc = 0.0 # global best accuracy
+    overall_best_feat_set = [] # global best feature 
+    for i in range(1, len(data[0]) - 1): # acts as a multiplier; how many times to run the inner loop
+        feat_to_add = 0
+        local_best_acc = 0.0 # best recorded accuracy for local levels
+        for k in range(1, len(data[0] - 1)): # runs through the features and calculates accuracy based on the current set with the new addition
+            if k not in curr_set_of_features:
+                # acc = random.random()
+                acc = find_accuracy(curr_set_of_features, data, k)
+                if acc > local_best_acc:
+                    local_best_acc = acc
+                    feat_to_add = k
+        curr_set_of_features.append(feat_to_add) # appends feature selected by inner for loop
+        if local_best_acc > global_best_acc: # check for decrease in accuracy
+            global_best_acc = local_best_acc
+            overall_best_feat_set = list(curr_set_of_features)
+        print("Set of current features (still running): ", curr_set_of_features)
+        print("Accuracy at current level: ", local_best_acc)
     end_time = time.time()
-    print("Current Best Accuracy: ", current_best_accuracy, "Using features: ", current_set_of_features, "On level: ", i) # REMOVE
-    print("Time elapsed: ", end_time - start_time)
-    return
+    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc, '\n', "Elapsed time: ", end_time - start_time)
 
 
 def backwards_elimination(data):
@@ -83,24 +79,23 @@ def read_in_data(filename):
 
 
 # https://docs.scipy.org/doc/numpy-1.13.0/reference/index.html
-def find_accuracy(set_of_features, data):
+def find_accuracy(set_of_features, data, test_feature):
+    test_feat_set = list(set_of_features)
+    test_feat_set.append(test_feature)
     num_correct_classifications = 0
     current_shortest_distance = math.inf
     result = 0 # will be either 1 or 2
-    # n-space Euclidean distance formula
-    for i in range(0, len(data)):
-        for h in range(1, len(data)):
-            if h != i:
+    for i in data:
+        for h in data:
+            if not np.array_equal(h, i): #checks if h and i are not the same row (aka, data point)
                 distance = 0
-                current_shortest_distance = math.inf
-                for j in set_of_features:
-                    distance += pow((data[i][j] - data[h][j]), 2.0)
-                #print("Distance: ", distance)
+                for j in test_feat_set:
+                    distance += pow((i[j] - h[j]), 2.0) # n-space Euclidean distance formula
                 if math.sqrt(distance) < current_shortest_distance:
                     current_shortest_distance = math.sqrt(distance)
-                    result = data[h][0] # the result "guessed" by the algorithm
-                if result == data[i][0]:
-                    num_correct_classifications += 1
+                    result = h[0] # the result "guessed" by the algorithm
+        if result == i[0]:
+            num_correct_classifications += 1
 
     return num_correct_classifications / (len(data) - 1)
 
