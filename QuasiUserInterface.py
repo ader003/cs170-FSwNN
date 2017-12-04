@@ -83,16 +83,17 @@ def find_accuracy(set_of_features, data, test_feature):
     test_feat_set = list(set_of_features)
     test_feat_set.append(test_feature)
     num_correct_classifications = 0
-    current_shortest_distance = math.inf
+    local_shortest_distance = math.inf
     result = 0 # will be either 1 or 2
     for i in data:
+        local_shortest_distance = math.inf
         for h in data:
             if not np.array_equal(h, i): #checks if h and i are not the same row (aka, data point)
                 distance = 0
                 for j in test_feat_set:
                     distance += pow((i[j] - h[j]), 2.0) # n-space Euclidean distance formula
-                if math.sqrt(distance) < current_shortest_distance:
-                    current_shortest_distance = math.sqrt(distance)
+                if math.sqrt(distance) < local_shortest_distance:
+                    local_shortest_distance = math.sqrt(distance)
                     result = h[0] # the result "guessed" by the algorithm
         if result == i[0]:
             num_correct_classifications += 1
