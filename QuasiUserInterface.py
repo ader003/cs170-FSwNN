@@ -1,7 +1,8 @@
 import numpy as np
-import NN
+import math
 import random
 import copy
+import time
 
 
 def select_algorithm():
@@ -17,8 +18,9 @@ def select_algorithm():
     return algorithm
 
 
-def normalize_data():
-    return
+def normalize_data(data):
+    data = (data - np.mean(data)) / np.std(data)
+    return data
 
 
 def forward_selection(data):
@@ -26,25 +28,27 @@ def forward_selection(data):
     #print("FIRST LINE OF DATA: ", data[0], '\n') 
     #print("Length of data[0]: ", len(data[0]), '\n') CONSENSUS: Data is read in correctly; len(data[i]) = 11
     current_set_of_features = []
+    considered_set_of_features = []
     print("Beginning search.")
+    current_best_accuracy = 0.0
+    start_time = time.time()
     for i in range(0, len(data)):
-        print("On the ", i, "th ", "level of the search tree")
-        feature_added_at_this_level = 0
-        current_best_accuracy = 0.0
-        for k in range(0, len(data[i])):
-            if k in current_set_of_features:
-                pass
-            else:
-                #print("--Considering adding the ", k, " feature")
-                accuracy = random.random() # FUNCTION STUB; TODO: FIX
-                #accuracy = find_accuracy(current_set_of_features)
-
-            if accuracy > current_best_accuracy:
-                current_best_accuracy = accuracy * 100
-                feature_addded_at_this_level = k
-        current_set_of_features.append(feature_added_at_this_level)
-        print("On level ", i, " I added feature ", feature_added_at_this_level, " to the current set of features used.")
-    print("Using features ", current_set_of_features, " accuracy is ", current_best_accuracy, "%")
+        for k in range(1, len(data[i])):
+            if k not in current_set_of_features:
+                current_set_of_features.append(k)
+                considered_set_of_features.append(k)
+                # accuracy = find_accuracy(current_set_of_features, data)
+                accuracy = random.random()
+                current_set_of_features.remove(k)
+                if accuracy > current_best_accuracy:
+                    current_best_accuracy = accuracy
+                    feature_added_at_this_level = k
+        if k not in current_set_of_features and k not in considered_set_of_features:
+            current_set_of_features.append(feature_added_at_this_level)
+        print(current_set_of_features)
+    end_time = time.time()
+    print("Current Best Accuracy: ", current_best_accuracy, "Using features: ", current_set_of_features, "On level: ", i) # REMOVE
+    print("Time elapsed: ", end_time - start_time)
     return
 
 
@@ -60,7 +64,7 @@ def backwards_elimination(data):
             pass
         else:
             testing_set_of_features.remove(h)
-            if find_accuracy(data, testing_set_of_features) > current_best_accuracy:
+            if find_accuracy(testing_set_of_features, data) > current_best_accuracy:
                 #if the accuracy without the feature is greater than with it, append the feature to the list detailing the removed features, and remove it from the set of features to check
                 list_of_removed_features.append(h)
                 current_set_of_features.remove(h)
@@ -77,25 +81,39 @@ def propinqua():
 def read_in_data(filename):
     return np.loadtxt(filename)
 
+
 # https://docs.scipy.org/doc/numpy-1.13.0/reference/index.html
-def find_accuracy(set_of_features, data): #TODO: Nearest neighbor
-    classifications_correct = 0
-    for i in data:
-        # TODO : MATH GOES HERE
-        result = 0 # THE RESULT GUESSED BY THE ALGORITHM
-        if result == data[i]:
-            classifications_correct = classifications_correct + 1
-    return classifications_correct / len(data)
+def find_accuracy(set_of_features, data):
+    num_correct_classifications = 0
+    current_shortest_distance = math.inf
+    result = 0 # will be either 1 or 2
+    # n-space Euclidean distance formula
+    for i in range(0, len(data)):
+        for h in range(1, len(data)):
+            if h != i:
+                distance = 0
+                current_shortest_distance = math.inf
+                for j in set_of_features:
+                    distance += pow((data[i][j] - data[h][j]), 2.0)
+                #print("Distance: ", distance)
+                if math.sqrt(distance) < current_shortest_distance:
+                    current_shortest_distance = math.sqrt(distance)
+                    result = data[h][0] # the result "guessed" by the algorithm
+                if result == data[i][0]:
+                    num_correct_classifications += 1
+
+    return num_correct_classifications / (len(data) - 1)
+
 
 def main():
     filename = input("Type in the name of the file to test: ")
     algorithm = select_algorithm()
     if algorithm == "1":
-        feature_search(read_in_data(filename), 1)
+        forward_selection(normalize_data(read_in_data(filename)))
     if algorithm == "2":
-       feature_search(read_in_data(filename), 2)
+       backwards_elimination(read_in_data(filename))
     if algorithm == "3":
-       feature_search(read_in_data(filename), 3)
+       feature_search(read_in_data(filename))
 
     return
 
