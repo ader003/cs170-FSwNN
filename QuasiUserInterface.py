@@ -57,19 +57,18 @@ def backwards_elimination(data):
     for i in range(1, len(data[0] - 1)):
         feat_to_pop = 0
         local_best_acc = 0.0 # best recorded accuracy for local levels
-        for j in range(1, len(data[0]) - 1):
-            for k in range(1, len(data[0]) - 1):
-                if k in curr_set_of_features:
-                    #acc = find_accuracy(curr_set_of_features, data, k, 2)
-                    acc = random.random()
-                    if acc > local_best_acc:
-                        local_best_acc = acc
-                        feat_to_pop = k
-            if feat_to_pop in curr_set_of_features: #TODO: CHECK W JOC
-                curr_set_of_features.remove(feat_to_pop) # removes feature selected by inner for loop
-            if local_best_acc > global_best_acc: # check for decrease in accuracy
-                global_best_acc = local_best_acc
-                overall_best_feat_set = list(curr_set_of_features)
+        for k in range(1, len(data[0]) - 1):
+            if k in curr_set_of_features:
+                acc = find_accuracy(curr_set_of_features, data, k, 2)
+                # acc = random.random()
+                if acc > local_best_acc:
+                    local_best_acc = acc
+                    feat_to_pop = k
+        if feat_to_pop in curr_set_of_features: #TODO: CHECK W JOC
+            curr_set_of_features.remove(feat_to_pop) # removes feature selected by inner for loop
+        if local_best_acc > global_best_acc: # check for decrease in accuracy
+            global_best_acc = local_best_acc
+            overall_best_feat_set = list(curr_set_of_features)
     end_time = time.time()
     print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc, '\n', "Elapsed time: ", end_time - start_time)
     return
@@ -105,7 +104,6 @@ def find_accuracy(set_of_features, data, test_feature, algorithm):
                     result = h[0] # the result "guessed" by the algorithm
         if result == i[0]:
             num_correct_classifications += 1
-
     return num_correct_classifications / (len(data) - 1)
 
 
