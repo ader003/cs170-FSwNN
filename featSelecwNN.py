@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import random
-import copy
 import time
 
 
@@ -18,7 +17,9 @@ def select_algorithm():
 
 
 def normalize_data(data):
+    print("Please hold while data is normalized.")
     data = (data - np.mean(data)) / np.std(data)
+    print("... Done!")
     return data
 
 
@@ -32,22 +33,19 @@ def forward_selection(data):
         local_best_acc = 0.0 # best recorded accuracy for local levels
         for k in range(1, len(data[0])): # runs through the features and calculates accuracy based on the current set with the new addition
             if k not in curr_set_of_features:
-#TODO: ADD BACK IN
-                #print("--Considering adding feature ", k)
+                print("--Considering adding feature ", k)
                 acc = find_accuracy(curr_set_of_features, data, k, 1)
                 if acc > local_best_acc:
                     local_best_acc = acc
                     feat_to_add = k
         curr_set_of_features.append(feat_to_add) # appends feature selected by inner for loop
         print("On level ", i, " feature ", feat_to_add, " was added to the current set")
-        print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc)
+        print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc * 100, "%")
         if local_best_acc >= global_best_acc: # check for decrease in accuracy
             global_best_acc = local_best_acc
             overall_best_feat_set = list(curr_set_of_features)
-        # print("Set of current features (still running): ", curr_set_of_features)
-        # print("Accuracy at current level: ", local_best_acc)
     end_time = time.time()
-    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc, '\n', "Elapsed time: ", end_time - start_time)
+    print("Set of features used: ", overall_best_feat_set, "at accuracy: ", global_best_acc * 100, '\n', "Elapsed time: ", end_time - start_time)
     return
 
 
@@ -61,8 +59,7 @@ def backwards_elimination(data):
         local_best_acc = 0.0 # best recorded accuracy for local levels
         for k in range(1, len(data[0]) - 1):
             if k in curr_set_of_features:
-                #TODO: ADD BACK IN
-                #print("--Considering adding feature ", k)
+                print("--Considering adding feature ", k)
                 acc = find_accuracy(curr_set_of_features, data, k, 2)
                 if acc > local_best_acc:
                     local_best_acc = acc
@@ -70,15 +67,15 @@ def backwards_elimination(data):
         if feat_to_pop in curr_set_of_features: 
             curr_set_of_features.remove(feat_to_pop) # removes feature selected by inner for loop
             print("On level ", i, " feature ", feat_to_pop, " was removed from the current set")
-            print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc)
+            print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc * 100, "%")
         if local_best_acc >= global_best_acc: # check for decrease in accuracy
             global_best_acc = local_best_acc
             overall_best_feat_set = list(curr_set_of_features)
     end_time = time.time()
-    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc, '\n', "Elapsed time: ", end_time - start_time)
+    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc * 100, '\n', "Elapsed time: ", end_time - start_time)
     return
 
-def propinqua(data): #forward selection with pruning; about 15 times faster compared to vanilla FS on BIG71.txt
+def propinqua(data): #forward selection with pruning
     print("You have selected the custom Propinqua Algorithm. Please note that only the best feature tests will be printed.")
     curr_set_of_features = []
     global_best_acc = 0.0 # global best accuracy
@@ -89,7 +86,6 @@ def propinqua(data): #forward selection with pruning; about 15 times faster comp
         local_best_acc = 0.0 # best recorded accuracy for local levels
         for k in range(1, len(data[0])): # runs through the features and calculates accuracy based on the current set with the new addition
             if k not in curr_set_of_features:
-                # acc = random.random() #function stub
                 acc = find_accuracy(curr_set_of_features, data, k, 1)
                 if acc > local_best_acc:
                     local_best_acc = acc
@@ -97,17 +93,14 @@ def propinqua(data): #forward selection with pruning; about 15 times faster comp
         if local_best_acc <= global_best_acc:
             if k == len(data[0]) - 1: # if the addition of any feature not yet included results in a decrease in accuracy, the best set has been found; break out of loop
                 break
-            else:
-                print("Continued. Feature set last considered: ", curr_set_of_features, '\n', "This iteration's considered k value: ", k)
-                continue
         if local_best_acc > global_best_acc: # check for decrease in accuracy
             curr_set_of_features.append(feat_to_add) # appends feature selected by inner for loop
             global_best_acc = local_best_acc
             overall_best_feat_set = list(curr_set_of_features)
         print("Set of current features (algorithm still in progress): ", curr_set_of_features)
-        print("Accuracy at current level: ", local_best_acc)
+        print("Accuracy at current level: ", local_best_acc * 100, "%")
     end_time = time.time()
-    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc, '\n', "Elapsed time: ", end_time - start_time)
+    print("Set of features used: ", overall_best_feat_set, "At accuracy: ", global_best_acc * 100, "%", '\n', "Elapsed time: ", end_time - start_time)
     return
 
 
@@ -115,16 +108,12 @@ def read_in_data(filename):
     return np.loadtxt(filename)
 
 
-# https://docs.scipy.org/doc/numpy-1.13.0/reference/index.html
 def find_accuracy(set_of_features, data, test_feature, algorithm):
     test_feat_set = list(set_of_features)
-    if algorithm == 1: #forward selection; propinqua
+    if algorithm == 1: #forward selection; Forward's Propinqua
         test_feat_set.append(test_feature)
     if algorithm == 2: #backwards elimination
         test_feat_set.remove(test_feature)
-        # TODO: DELETE
-    if algorithm == 99:
-        x = 0
     num_correct_classifications = 0
     local_shortest_distance = math.inf
     result = 0 # will be either 1 or 2
@@ -152,35 +141,7 @@ def main():
        backwards_elimination(normalize_data(read_in_data(filename)))
     if algorithm == "3":
        propinqua(normalize_data(read_in_data(filename)))
-    if algorithm == "4":
-        special(normalize_data(read_in_data(filename)))
-    if algorithm == "5":
-        filename = input("Filename: ")
-        default_rate(filename)
     return
-
-
-#TODO: DELETE
-def special(data):
-    curr_set_of_features = [i for i in range(1, len(data[0] - 1))]
-    print(curr_set_of_features)
-    acc = find_accuracy(curr_set_of_features, data, 0, 99)
-    print(acc)
-
-#TODO: DELETE
-def default_rate(filename):
-    data = np.loadtxt(filename)
-    one = 0
-    two = 0
-    for i in data:
-        if i[0] == 1.0:
-            one += 1
-        if i[0] == 2.0:
-            two += 1
-    if one > two:
-        print(one / (one + two))
-    else:
-        print(two / (one + two))
 
 if __name__ == '__main__':
     main()
