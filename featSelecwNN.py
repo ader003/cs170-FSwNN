@@ -6,7 +6,6 @@ import time
 
 
 def select_algorithm():
-    # print("For the sake of the assignment, Dr. Keogh has said that there will only be two classifications.", '\n')
     algorithm = input("Select the algorithm you wish to use: " + '\n' +
                       "1. Forward Selection" + '\n' +
                       "2. Backwards Elimination" + '\n' +
@@ -28,20 +27,21 @@ def forward_selection(data):
     global_best_acc = 0.0 # global best accuracy
     overall_best_feat_set = [] # global best feature
     start_time = time.time()
-    for i in range(1, len(data[0]) - 1): # acts as a multiplier; how many times to run the inner loop
+    for i in range(1, len(data[0])): # acts as a multiplier; how many times to run the inner loop
         feat_to_add = 0
         local_best_acc = 0.0 # best recorded accuracy for local levels
-        for k in range(1, len(data[0] - 1)): # runs through the features and calculates accuracy based on the current set with the new addition
+        for k in range(1, len(data[0])): # runs through the features and calculates accuracy based on the current set with the new addition
             if k not in curr_set_of_features:
-                # acc = random.random() #function stub
-                print("--Considering adding feature ", k)
+#TODO: ADD BACK IN
+                #print("--Considering adding feature ", k)
                 acc = find_accuracy(curr_set_of_features, data, k, 1)
                 if acc > local_best_acc:
                     local_best_acc = acc
                     feat_to_add = k
         curr_set_of_features.append(feat_to_add) # appends feature selected by inner for loop
         print("On level ", i, " feature ", feat_to_add, " was added to the current set")
-        if local_best_acc > global_best_acc: # check for decrease in accuracy
+        print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc)
+        if local_best_acc >= global_best_acc: # check for decrease in accuracy
             global_best_acc = local_best_acc
             overall_best_feat_set = list(curr_set_of_features)
         # print("Set of current features (still running): ", curr_set_of_features)
@@ -61,16 +61,17 @@ def backwards_elimination(data):
         local_best_acc = 0.0 # best recorded accuracy for local levels
         for k in range(1, len(data[0]) - 1):
             if k in curr_set_of_features:
-                print("--Considering adding feature ", k)
+                #TODO: ADD BACK IN
+                #print("--Considering adding feature ", k)
                 acc = find_accuracy(curr_set_of_features, data, k, 2)
-                # acc = random.random() #function stub
                 if acc > local_best_acc:
                     local_best_acc = acc
                     feat_to_pop = k
         if feat_to_pop in curr_set_of_features: 
             curr_set_of_features.remove(feat_to_pop) # removes feature selected by inner for loop
             print("On level ", i, " feature ", feat_to_pop, " was removed from the current set")
-        if local_best_acc > global_best_acc: # check for decrease in accuracy
+            print("With ", len(curr_set_of_features), " features, the accuracy is: ", local_best_acc)
+        if local_best_acc >= global_best_acc: # check for decrease in accuracy
             global_best_acc = local_best_acc
             overall_best_feat_set = list(curr_set_of_features)
     end_time = time.time()
@@ -78,15 +79,15 @@ def backwards_elimination(data):
     return
 
 def propinqua(data): #forward selection with pruning; about 15 times faster compared to vanilla FS on BIG71.txt
-    print("You have selected the cuson Propinqua Algorithm. Please note that only the best feature tests will be printed.")
+    print("You have selected the custom Propinqua Algorithm. Please note that only the best feature tests will be printed.")
     curr_set_of_features = []
     global_best_acc = 0.0 # global best accuracy
     overall_best_feat_set = [] # global best feature
     start_time = time.time()
-    for i in range(1, len(data[0]) - 1): # acts as a multiplier; how many times to run the inner loop
+    for i in range(1, len(data[0])): # acts as a multiplier; how many times to run the inner loop
         feat_to_add = 0
         local_best_acc = 0.0 # best recorded accuracy for local levels
-        for k in range(1, len(data[0] - 1)): # runs through the features and calculates accuracy based on the current set with the new addition
+        for k in range(1, len(data[0])): # runs through the features and calculates accuracy based on the current set with the new addition
             if k not in curr_set_of_features:
                 # acc = random.random() #function stub
                 acc = find_accuracy(curr_set_of_features, data, k, 1)
@@ -121,6 +122,9 @@ def find_accuracy(set_of_features, data, test_feature, algorithm):
         test_feat_set.append(test_feature)
     if algorithm == 2: #backwards elimination
         test_feat_set.remove(test_feature)
+        # TODO: DELETE
+    if algorithm == 99:
+        x = 0
     num_correct_classifications = 0
     local_shortest_distance = math.inf
     result = 0 # will be either 1 or 2
@@ -148,7 +152,35 @@ def main():
        backwards_elimination(normalize_data(read_in_data(filename)))
     if algorithm == "3":
        propinqua(normalize_data(read_in_data(filename)))
+    if algorithm == "4":
+        special(normalize_data(read_in_data(filename)))
+    if algorithm == "5":
+        filename = input("Filename: ")
+        default_rate(filename)
     return
+
+
+#TODO: DELETE
+def special(data):
+    curr_set_of_features = [i for i in range(1, len(data[0] - 1))]
+    print(curr_set_of_features)
+    acc = find_accuracy(curr_set_of_features, data, 0, 99)
+    print(acc)
+
+#TODO: DELETE
+def default_rate(filename):
+    data = np.loadtxt(filename)
+    one = 0
+    two = 0
+    for i in data:
+        if i[0] == 1.0:
+            one += 1
+        if i[0] == 2.0:
+            two += 1
+    if one > two:
+        print(one / (one + two))
+    else:
+        print(two / (one + two))
 
 if __name__ == '__main__':
     main()
